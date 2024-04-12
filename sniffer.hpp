@@ -9,6 +9,8 @@
 #include <netinet/ether.h>
 #include <netinet/tcp.h>
 #include <netinet/udp.h>
+#include <netinet/ip_icmp.h> // pro ICMP hlavičky
+#include <netinet/ip6.h>
 #include <pcap.h>
 #include <iostream>
 #include <string>
@@ -46,7 +48,14 @@ class Sniffer {
 
         void setFilter(string& filter);
 
+        void handleIpv4Packet(const u_char *packet);
+        void handleIpv6Packet(const u_char *packet);
+        void handleArpPacket(const u_char *packet);
+        void printTcpPacket(const u_char *packet);
+        void printUdpPacket(const u_char *packet);
+        void printIcmpPacket(const u_char *packet);
         static void printPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+        
 
     private:
         std::string interface;
