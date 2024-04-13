@@ -20,6 +20,7 @@
 using namespace std;
 
 struct Config{
+
     string interface;
     bool tcp = false;
     bool udp = false;
@@ -31,7 +32,7 @@ struct Config{
     bool icmp6 = false;
     bool igmp = false;
     bool mld = false;
-    int PacketCount = 1;
+    int packetCount = 1;
     bool allSpecified = false;
     
     
@@ -44,7 +45,7 @@ class Sniffer {
         // constructor
         Sniffer( string interface);
         ~Sniffer();
-        void sniff(int packetCount);
+        void sniff();
 
         void setFilter(string& filter);
 
@@ -55,9 +56,11 @@ class Sniffer {
         void printUdpPacket(const u_char *packet);
         void printIcmpPacket(const u_char *packet);
         static void printPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+        int packetCount = 1;
         
 
     private:
+    
         std::string interface;
         pcap_t *handle;
         char errbuf[PCAP_ERRBUF_SIZE];

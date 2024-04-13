@@ -1,56 +1,75 @@
 #include "sniffer.cpp"
 
 
-string createFilter( Config& sniffer_config){
+string createFilter( Config &sniffer_config){
     vector<std::string> configs;
-
+    std::string filter = "";
+    filter = "len < 0 ";
     if(sniffer_config.tcp){
         configs.push_back("tcp");
+        filter += "or tcp ";
+        if(sniffer_config.port > 0){
+        if(sniffer_config.sourcePort){
+            configs.push_back("src port " + to_string(sniffer_config.port));
+            filter += "src port " + to_string(sniffer_config.port) + " ";
+        }else if(sniffer_config.destinationPort){
+            configs.push_back("dst port " + to_string(sniffer_config.port));
+            filter += "dst port " + to_string(sniffer_config.port)  + " " ;
+        }else{
+            cout << "Port specified but not source or destination" << endl;
+            configs.push_back("port " + to_string(sniffer_config.port));
+            filter += "port " + to_string(sniffer_config.port)  + " ";
+        }
+    }
     }
     if(sniffer_config.udp){
         configs.push_back("udp");
+        filter += "or udp ";
+        if(sniffer_config.port > 0){
+        if(sniffer_config.sourcePort){
+            configs.push_back("src port " + to_string(sniffer_config.port));
+            filter += "src port " + to_string(sniffer_config.port) + " ";
+        }else if(sniffer_config.destinationPort){
+            configs.push_back("dst port " + to_string(sniffer_config.port));
+            filter += "dst port " + to_string(sniffer_config.port)  + " " ;
+        }else{
+          //  cout << "Port specified but not source or destination" << endl;
+            configs.push_back("port " + to_string(sniffer_config.port));
+            filter += "port " + to_string(sniffer_config.port)  + " ";
+        }
+    }
     }
     if(sniffer_config.arp){
         configs.push_back("arp");
+        filter += "or arp ";
     }
+    
     if(sniffer_config.icmp4){
         configs.push_back("icmp");
+        filter += "or icmp ";
     }
     if(sniffer_config.icmp6){
         configs.push_back("icmp6");
+        filter += "or icmp6 ";
     }
     if(sniffer_config.igmp){
         configs.push_back("igmp");
+        filter += "or igmp ";
     }
     if(sniffer_config.mld){
         configs.push_back("mld");
+        filter += "or mld ";
     }
 
-    if(sniffer_config.port > 0){
-        if(sniffer_config.sourcePort){
-            configs.push_back("src port " + to_string(sniffer_config.port));
-        }else if(sniffer_config.destinationPort){
-            configs.push_back("dst port " + to_string(sniffer_config.port));
-        }else{
-            configs.push_back("port " + to_string(sniffer_config.port));
-        }
-    }
     
-    ostringstream final_filter;
-    for(int i = 0; i < configs.size(); i++){
-        if(i > 0){
-            final_filter << " or ";
-        }
-        final_filter << configs[i];
-    }
-
-    return final_filter.str();
+    cout << filter << endl;
+    return filter;
 
 }
 
 void PrintAllActiveInterfaces(){
 
-    system("ip link show | grep 'state UP' -B1 | grep '<' | cut -d':' -f2 | tr -d ' '");
+    system("ip link show | grep 'state UP' -B1 | grep '<' | cut -d':' -f2 | tr -d ' '"); // change:!
 
 }
 
@@ -116,10 +135,10 @@ void parseArgs(int argc, char *argv[], Config &sniffer_config){
         }else if(string(argv[i]) == "-n"){
             if( i + 1 >= argc){
                 cout << "-n not specified, only 1" << endl;
-                sniffer_config.PacketCount = 1;
+                sniffer_config.packetCount = 1;
             }else{
                 try{
-                    sniffer_config.PacketCount = stoi(argv[i+1]);
+                    sniffer_config.packetCount = stoi(argv[i+1]);
                     i++;
                 }catch(exception e){
                     cout << "Invalid -n specified" << endl;
@@ -145,23 +164,23 @@ void parseArgs(int argc, char *argv[], Config &sniffer_config){
 int main(int argc, char *argv[]){
     
     
-    Config sniffer_config;
-
-
-    Sniffer sniffer("eth0");
-
-    parseArgs(argc, argv, sniffer_config);
+   
+    Config snifferConfig;
+    parseArgs(argc, argv, snifferConfig);
     
-    if(!sniffer_config.allSpecified){
+    Sniffer sniffer(snifferConfig.interface);
+    sniffer.packetCount = snifferConfig.packetCount;
+
+
+    if(!snifferConfig.allSpecified){
         PrintAllActiveInterfaces();
         return 0;
     }
 
-    string filter = createFilter(sniffer_config);
+    string filter = createFilter(snifferConfig);
     sniffer.setFilter(filter);
-    sniffer.sniff(sniffer_config.PacketCount);
+    sniffer.sniff();
 
-    
 
     //cout << filter << endl;
 
