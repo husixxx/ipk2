@@ -90,7 +90,7 @@ void Sniffer::handleIpv4Packet(const u_char *packet){
             printUdpPacket(packet + ipheader->ip_hl * 4);
             break;
         case IPPROTO_ICMP:
-            printIcmpPacket(packet + ipheader->ip_hl * 4);
+            printIcmp6Packet(packet + ipheader->ip_hl * 4);
             break;
         default:
             cout << "Unknown transport protocol" << endl;
@@ -140,8 +140,8 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
             cout << "ARP packet" << endl;
             break;       
         case ETHERTYPE_IPV6:
+            // cout << "IPv6 packet" << endl;
             sniffer->handleIpv6Packet(packet);
-            //cout << "IPv6 packet" << endl;
             break;
         default:
             cout << "Unknown packet" << endl;
@@ -154,7 +154,7 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
 
 // Sniff function
 void Sniffer::sniff(){
-   // cout << "Sniffing on interface " << interface << endl;
+    //cout << "Sniffing on interface " << interface << endl;
     pcap_loop(handle, packetCount, printPacket, reinterpret_cast<u_char*>(this));
 }
 
@@ -162,7 +162,7 @@ void Sniffer::sniff(){
 void Sniffer::handleIpv6Packet(const u_char *packet){
 
     char ip6_addr[INET6_ADDRSTRLEN];
-    const struct ip6_hdr *ip6header = (struct ip6_hdr *)packet;
+    const struct ip6_hdr *ip6header = (struct ip6_hdr *)(packet + sizeof(struct ether_header));
 
     std::cout << "src IP: " << inet_ntop(AF_INET6, &(ip6header->ip6_src), ip6_addr, INET6_ADDRSTRLEN ) << std::endl;
     std::cout << "dst IP: " << inet_ntop(AF_INET6, &(ip6header->ip6_dst), ip6_addr, INET6_ADDRSTRLEN ) << std::endl;
@@ -174,10 +174,13 @@ void Sniffer::handleIpv6Packet(const u_char *packet){
             printUdpPacket(packet + sizeof(struct ip6_hdr));
             break;
         case IPPROTO_ICMPV6:
-            printIcmpPacket(packet + sizeof(struct ip6_hdr));
+            printIcmp6Packet(packet + sizeof(struct ip6_hdr));
+            break;
+        case IPPROTO_HOPOPTS:
+            cout << "NDP PROTOCOL" << endl;
             break;
         default:
-            cout << "Unknown transport protocol" << endl;
+            cout << "Unknown transport protocol ipv6" << to_string(ip6header->ip6_nxt) << endl;
             break;
     }
 }
@@ -196,15 +199,15 @@ void Sniffer::handleArpPacket(const u_char *packet){
 void Sniffer::printTcpPacket(const u_char *packet){
 
     const struct ip *ipheader = (const struct ip *)packet;
-    const struct tcphdr *tcpheader = (struct tcphdr *)packet;
+    const struct tcphdr *tcpheader = (struct tcphdr *)(packet + sizeof(ether_header) + ipheader->ip_hl * 4);
 
     // char srcIp[INET_ADDRSTRLEN]; // buffer for src
     // char dstIp[INET_ADDRSTRLEN]; // buffer for dst
     // inet_ntop(AF_INET, &(ipheader->ip_src), srcIp, INET_ADDRSTRLEN);
     // inet_ntop(AF_INET, &(ipheader->ip_dst), dstIp, INET_ADDRSTRLEN);
 
-    int srcPort = ntohs(tcpheader->th_sport);
-    int dstPort = ntohs(tcpheader->th_dport);
+    int srcPort = ntohs(tcpheader->source);
+    int dstPort = ntohs(tcpheader->dest);
 
     // std::cout << "src IP: " << srcIp << std::endl;
     // std::cout << "dst IP: " << dstIp << std::endl;
@@ -234,10 +237,11 @@ void Sniffer::printUdpPacket(const u_char *packet){
     std::cout << "dst port: " << dstPort << std::endl;
 }
 
-void Sniffer::printIcmpPacket(const u_char *packet){
+void Sniffer::printIcmp6Packet(const u_char *packet){
     const struct ip *ipheader = (const struct ip *)packet;
     const struct icmp *icmpheader = (const struct icmp *)(packet + ipheader->ip_hl * 4);
 
+    cout << "ICMP packet" << endl;
     // char srcIp[INET_ADDRSTRLEN];
     // char dstIp[INET_ADDRSTRLEN];
     // inet_ntop(AF_INET, &(ipheader->ip_src), srcIp, INET_ADDRSTRLEN);

@@ -11,6 +11,7 @@
 #include <netinet/udp.h>
 #include <netinet/ip_icmp.h> // pro ICMP hlavičky
 #include <netinet/ip6.h>
+#include <netinet/icmp6.h>
 #include <pcap.h>
 #include <iostream>
 #include <string>
@@ -28,12 +29,14 @@ struct Config{
     bool sourcePort = false;
     bool destinationPort = false;
     bool arp = false;
+    bool ndp = false;
     bool icmp4 = false;
     bool icmp6 = false;
     bool igmp = false;
     bool mld = false;
     int packetCount = 1;
     bool allSpecified = false;
+    bool onlySpecified = false;
     
     
 };
@@ -54,7 +57,7 @@ class Sniffer {
         void handleArpPacket(const u_char *packet);
         void printTcpPacket(const u_char *packet);
         void printUdpPacket(const u_char *packet);
-        void printIcmpPacket(const u_char *packet);
+        void printIcmp6Packet(const u_char *packet);
         static void printPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
         int packetCount = 1;
         

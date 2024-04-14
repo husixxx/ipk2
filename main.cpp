@@ -4,6 +4,9 @@
 string createFilter( Config &sniffer_config){
     vector<std::string> configs;
     std::string filter = "";
+    if(sniffer_config.onlySpecified){
+        return filter;
+    }
     filter = "len < 0 ";
     if(sniffer_config.tcp){
         configs.push_back("tcp");
@@ -43,6 +46,10 @@ string createFilter( Config &sniffer_config){
         configs.push_back("arp");
         filter += "or arp ";
     }
+    if(sniffer_config.ndp){
+        configs.push_back("ndp");
+        filter += "or icmp6 and ip6[40] >= 133 and ip6[40] <= 137";
+    }
     
     if(sniffer_config.icmp4){
         configs.push_back("icmp");
@@ -62,7 +69,7 @@ string createFilter( Config &sniffer_config){
     }
 
     
-    cout << filter << endl;
+    //cout << filter << endl;
     return filter;
 
 }
@@ -86,6 +93,7 @@ void parseArgs(int argc, char *argv[], Config &sniffer_config){
                 sniffer_config.interface = string(argv[i+1]);
                 i++;
                 sniffer_config.allSpecified = true;
+                sniffer_config.onlySpecified = true;
             }
 
         }else if(string(argv[i]) == "-p" || string(argv[i]) == "--port-source" || string(argv[i]) == "--port-destination"){
@@ -111,27 +119,35 @@ void parseArgs(int argc, char *argv[], Config &sniffer_config){
                 
             }
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "--tcp" || string(argv[i]) == "-t"){
             sniffer_config.tcp = true;
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "--udp" || string(argv[i]) == "-u"){
             sniffer_config.udp = true;
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "--arp"){
             sniffer_config.arp = true;
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "--icmp4"){
             sniffer_config.icmp4 = true;
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "--icmp6"){
             sniffer_config.icmp6 = true;
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "--igmp"){
             sniffer_config.igmp = true;
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "--mld"){
             sniffer_config.mld = true;
             sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
         }else if(string(argv[i]) == "-n"){
             if( i + 1 >= argc){
                 cout << "-n not specified, only 1" << endl;
@@ -149,7 +165,13 @@ void parseArgs(int argc, char *argv[], Config &sniffer_config){
             }
 
             sniffer_config.allSpecified = true;
-        }else{
+            sniffer_config.onlySpecified = false;
+        }else if(string(argv[i]) == "--ndp"){
+            sniffer_config.ndp = true;
+            sniffer_config.allSpecified = true;
+            sniffer_config.onlySpecified = false;
+        }
+        else{
             cout << "Invalid argument: " << argv[i] << endl;
             exit(1);
         }
@@ -170,6 +192,7 @@ int main(int argc, char *argv[]){
     
     Sniffer sniffer(snifferConfig.interface);
     sniffer.packetCount = snifferConfig.packetCount;
+    
 
 
     if(!snifferConfig.allSpecified){
@@ -182,7 +205,7 @@ int main(int argc, char *argv[]){
     sniffer.sniff();
 
 
-    //cout << filter << endl;
+    cout << filter << endl;
 
 
     return 0;
