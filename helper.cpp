@@ -1,6 +1,7 @@
+
 #include "helper.hpp"
 
-std::string createFilter( Config &sniffer_config ){
+std::string helper::createFilter( Config &sniffer_config ){
     vector<std::string> configs;
     std::string filter = "";
     if(sniffer_config.onlySpecified){
@@ -73,7 +74,7 @@ std::string createFilter( Config &sniffer_config ){
 
 }
 
-void PrintAllActiveInterfaces(){
+void helper::PrintAllActiveInterfaces(){
 
     system("ip link show | grep 'state UP' -B1 | grep '<' | cut -d':' -f2 | tr -d ' '"); // change:!
 
@@ -81,7 +82,7 @@ void PrintAllActiveInterfaces(){
 
 
 
-void parseArgs(int argc, char *argv[], Config &sniffer_config){
+void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
     int port = 0;
     for(int i = 1; i < argc; i++){
         if(string(argv[i]) == "-i" || string(argv[i]) == "--interface"){

@@ -10,7 +10,7 @@ int main(int argc, char *argv[]){
     // structure for storing configuration
     Config snifferConfig;
     // parse arguments and store config
-    parseArgs(argc, argv, snifferConfig);
+    helper::parseArgs(argc, argv, snifferConfig);
     
     // create sniffer object
     Sniffer sniffer(snifferConfig.interface);
@@ -18,18 +18,16 @@ int main(int argc, char *argv[]){
     sniffer.packetCount = snifferConfig.packetCount;
     // no args specified print all active interfaces
     if(!snifferConfig.allSpecified){
-        PrintAllActiveInterfaces();
+        helper::PrintAllActiveInterfaces();
         return 0;
     }
     // create filter from config
-    string filter = createFilter(snifferConfig);
+    string filter = helper::createFilter(snifferConfig);
     // set filter
     sniffer.setFilter(filter);
     // start sniffing
     sniffer.sniff();
-
     cout << filter << endl;
-
 
     return 0;
 }
