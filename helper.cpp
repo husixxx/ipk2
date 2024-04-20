@@ -2,76 +2,75 @@
 #include "helper.hpp"
 
 std::string helper::createFilter( Config &sniffer_config ){
-    vector<std::string> configs;
     std::string filter = "";
     if(sniffer_config.onlySpecified){
         return filter;
     }
     filter = "len < 0 ";
     if(sniffer_config.tcp){
-        configs.push_back("tcp");
         filter += "or tcp ";
         if(sniffer_config.port > 0){
-        if(sniffer_config.sourcePort){
-            configs.push_back("src port " + to_string(sniffer_config.port));
-            filter += "src port " + to_string(sniffer_config.port) + " ";
-        }else if(sniffer_config.destinationPort){
-            configs.push_back("dst port " + to_string(sniffer_config.port));
-            filter += "dst port " + to_string(sniffer_config.port)  + " " ;
-        }else{
-            cout << "Port specified but not source or destination" << endl;
-            configs.push_back("port " + to_string(sniffer_config.port));
-            filter += "port " + to_string(sniffer_config.port)  + " ";
+            if(sniffer_config.sourcePort){
+                filter += "src port " + to_string(sniffer_config.port) + " ";
+            }else if(sniffer_config.destinationPort){
+                filter += "dst port " + to_string(sniffer_config.port)  + " " ;
+            }else{
+                filter += "port " + to_string(sniffer_config.port)  + " ";
+            }
         }
-    }
     }
     if(sniffer_config.udp){
-        configs.push_back("udp");
         filter += "or udp ";
         if(sniffer_config.port > 0){
-        if(sniffer_config.sourcePort){
-            configs.push_back("src port " + to_string(sniffer_config.port));
-            filter += "src port " + to_string(sniffer_config.port) + " ";
-        }else if(sniffer_config.destinationPort){
-            configs.push_back("dst port " + to_string(sniffer_config.port));
-            filter += "dst port " + to_string(sniffer_config.port)  + " " ;
-        }else{
-          //  cout << "Port specified but not source or destination" << endl;
-            configs.push_back("port " + to_string(sniffer_config.port));
-            filter += "port " + to_string(sniffer_config.port)  + " ";
+            if(sniffer_config.sourcePort){
+                filter += "src port " + to_string(sniffer_config.port) + " ";
+            }else if(sniffer_config.destinationPort){
+                filter += "dst port " + to_string(sniffer_config.port)  + " " ;
+            }else{
+                filter += "port " + to_string(sniffer_config.port)  + " ";
+            }
         }
     }
+    if(!sniffer_config.udp && !sniffer_config.tcp && sniffer_config.port > 0){
+        filter += "or tcp ";
+        if(sniffer_config.sourcePort){
+            filter += "src port " + to_string(sniffer_config.port) + " ";
+        }else if(sniffer_config.destinationPort){
+            filter += "dst port " + to_string(sniffer_config.port)  + " " ;
+        }else{
+            filter += "port " + to_string(sniffer_config.port)  + " ";
+        }
+        filter += "or udp ";
+        if(sniffer_config.sourcePort){
+            filter += "src port " + to_string(sniffer_config.port) + " ";
+        }else if(sniffer_config.destinationPort){
+            filter += "dst port " + to_string(sniffer_config.port)  + " " ;
+        }else{
+            filter += "port " + to_string(sniffer_config.port)  + " ";
+        }
+        
     }
     if(sniffer_config.arp){
-        configs.push_back("arp");
         filter += "or arp ";
     }
     if(sniffer_config.ndp){
-        configs.push_back("ndp");
         filter += "or icmp6 and ip6[40] >= 133 and ip6[40] <= 137";
     }
     
     if(sniffer_config.icmp4){
-        configs.push_back("icmp");
         filter += "or icmp ";
     }
     if(sniffer_config.icmp6){
-        configs.push_back("icmp6");
         filter += "or icmp6 ";
     }
     if(sniffer_config.igmp){
-        configs.push_back("igmp");
         filter += "or igmp ";
     }
     if(sniffer_config.mld){
-        configs.push_back("mld");
-        filter += "or mld ";
+        filter += "or icmp6 and (ip6[40] >= 130 and ip6[40] <= 132 or ip6[40] = 143)";
     }
 
-    
-    //cout << filter << endl;
     return filter;
-
 }
 
 void helper::PrintAllActiveInterfaces(){
