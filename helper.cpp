@@ -75,7 +75,18 @@ std::string helper::createFilter( Config &sniffer_config ){
 
 void helper::PrintAllActiveInterfaces(){
 
-    system("ip link show | grep 'state UP' -B1 | grep '<' | cut -d':' -f2 | tr -d ' '"); // change:!
+    pcap_if_t *alldevs;
+    char errbuf[PCAP_ERRBUF_SIZE];
+    if(pcap_findalldevs(&alldevs, errbuf) == -1){
+        cout << "Error finding devices: " << errbuf << endl;
+        exit(1);
+    }
+    while(alldevs != NULL){
+        cout << alldevs->name << endl;
+        alldevs = alldevs->next;
+    }
+
+    pcap_freealldevs(alldevs);
 
 }
 
@@ -86,7 +97,6 @@ void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
     for(int i = 1; i < argc; i++){
         if(string(argv[i]) == "-i" || string(argv[i]) == "--interface"){
             if( i + 1 >= argc){
-                cout << "No interface specified" << endl;
                 sniffer_config.interface = "";
             }else{
                 sniffer_config.interface = string(argv[i+1]);
@@ -175,4 +185,9 @@ void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
             exit(1);
         }
     }
+}
+
+void helper::signalHandler(int signum){
+    cout << "SIGINT received, closing...";
+    exit(signum);
 }
