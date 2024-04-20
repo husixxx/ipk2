@@ -18,6 +18,7 @@ Sniffer::~Sniffer(){
 }
 
 void printPacketData(const u_char* packet, int length) {
+    std::cout << std::endl;
     std::cout << std::hex << std::setfill('0'); // Nastavíme formátování pro hexadecimální výstup
     for (int i = 0; i < length; ++i) {
         // Začátek nového řádku

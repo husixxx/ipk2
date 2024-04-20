@@ -69,7 +69,7 @@ std::string helper::createFilter( Config &sniffer_config ){
     if(sniffer_config.mld){
         filter += "or icmp6 and (ip6[40] >= 130 and ip6[40] <= 132 or ip6[40] = 143)";
     }
-
+    
     return filter;
 }
 
