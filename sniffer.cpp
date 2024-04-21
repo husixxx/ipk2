@@ -1,5 +1,6 @@
 #include "sniffer.hpp"
 
+
 Sniffer::Sniffer( string interface) : interface(interface) , handle(nullptr) {
 
     handle = pcap_open_live(interface.c_str(), BUFSIZ, 1, 1000, errbuf);
@@ -18,44 +19,43 @@ Sniffer::~Sniffer(){
 }
 
 void printPacketData(const u_char* packet, int length) {
-    std::cout << std::endl;
-    std::cout << std::hex << std::setfill('0'); // Nastavíme formátování pro hexadecimální výstup
+    cout << endl;
+    cout << hex << setfill('0'); // set formating for hex output
     for (int i = 0; i < length; ++i) {
-        // Začátek nového řádku
+        
         if (i % 16 == 0) {
             if (i != 0) {
-                std::cout << " "; // Mezera mezi hex a ASCII reprezentací na konci řádku
-                // Výpis ASCII reprezentace pro předchozí řádek
+                cout << " "; // space between hex and ASCII representation
+                // print ascii
                 for (int j = i - 16; j < i; ++j)
-                    std::cout << (isprint(packet[j]) ? static_cast<char>(packet[j]) : '.');
-                std::cout << std::endl;
+                    cout << (isprint(packet[j]) ? static_cast<char>(packet[j]) : '.');
+                cout << endl;
             }
-            // Adresa řádku
-            std::cout << "0x" << std::setw(4) << i << ": ";
+            // adrress 
+            cout << "0x" << setw(4) << i << ": ";
         }
 
-        // Výpis hexadecimálního znaku
-        std::cout << std::setw(2) << static_cast<unsigned>(packet[i]) << " ";
+        // hexa print
+        cout << setw(2) << static_cast<unsigned>(packet[i]) << " ";
     }
 
-    // Doplňující mezery pro poslední řádek, pokud není úplný
+    // padding for last line
     int bytes_left = length % 16;
     if (bytes_left > 0) {
         for (int i = 0; i < 16 - bytes_left; ++i) {
-            std::cout << "   "; // Tři mezery pro každý neexistující byte
+            cout << "   "; // padding
         }
     }
 
-    // Poslední řádek ASCII výpisu
-    std::cout << " "; // Mezera mezi hex a ASCII reprezentací
+    // last lane
+    cout << " ";
     int start = length - (length % 16);
     for (int i = start; i < length; ++i)
-        std::cout << (isprint(packet[i]) ? static_cast<char>(packet[i]) : '.');
-    std::cout << std::endl;
+        cout << (isprint(packet[i]) ? static_cast<char>(packet[i]) : '.');
+    cout << endl;
 
-    std::cout << std::dec; // Vrátíme se k decimálnímu formátování
+    cout << dec; // dec print
 }
-
 
 
 void Sniffer::setFilter(string& filter){
@@ -79,9 +79,9 @@ void Sniffer::setFilter(string& filter){
 void Sniffer::handleIpv4Packet(const u_char *packet){
     struct ip *ipheader = (struct ip *)(packet + sizeof(struct ether_header));
 
-
-    std::cout << "src IP: " << inet_ntoa(ipheader->ip_src)<< std::endl;
-    std::cout << "dst IP: " << inet_ntoa(ipheader->ip_dst) << std::endl;
+    cout << "-- IPv4" << endl;
+    cout << "src IP: " << inet_ntoa(ipheader->ip_src)<< endl;
+    cout << "dst IP: " << inet_ntoa(ipheader->ip_dst) << endl;
     
     switch(ipheader->ip_p){
         case IPPROTO_TCP:
@@ -101,9 +101,10 @@ void Sniffer::handleIpv4Packet(const u_char *packet){
 
 void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *packet){
 
+    // get sniffer object from args
     Sniffer* sniffer = reinterpret_cast<Sniffer*>(args);
 
-    
+    // get timestamp
     time_t timer = header->ts.tv_sec;
     struct tm *timeinfo = localtime(&timer);
     char buffer[80];
@@ -111,14 +112,17 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
     char tzbuffer[6];
     strftime(tzbuffer, sizeof(tzbuffer), "%z", timeinfo);
 
-    // Vložení dvojtečky do časového pásma
-    std::string tzformatted = std::string(tzbuffer).insert(3, ":");
-
-    // Vytvoření konečného řetězce
-    std::string timestamp = std::string(buffer) + tzformatted;
-    cout << "timestamp: " << timestamp << endl;
+    // format timezone            
+    string tzformatted = string(tzbuffer).insert(3, ":");
+    string timestamp = string(buffer) + tzformatted;
     struct ether_header *eth = (struct ether_header *) packet;
 
+    // print timestamp of the packet
+    cout << "timestamp: " << timestamp << endl;
+    // ethernet layer
+    cout <<"-- Ethernet" << endl;
+
+    // get the mac addresses
     char srcMac[18], dstMac[18];
     snprintf(srcMac, sizeof(srcMac), "%02x:%02x:%02x:%02x:%02x:%02x",
         eth->ether_shost[0], eth->ether_shost[1], eth->ether_shost[2],
@@ -127,21 +131,19 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
         eth->ether_dhost[0], eth->ether_dhost[1], eth->ether_dhost[2],
         eth->ether_dhost[3], eth->ether_dhost[4], eth->ether_dhost[5]);
 
-    std::cout << "src MAC: " << srcMac << std::endl;
-    std::cout << "dst MAC: " << dstMac << std::endl;
+    cout << "src MAC: " << srcMac << endl;
+    cout << "dst MAC: " << dstMac << endl;
     cout << "frame length: " << header->len << endl;
 
 
     switch(ntohs(eth->ether_type)){
         case ETHERTYPE_IP:
             sniffer->handleIpv4Packet(packet); // Call handleIpv4Packet directly
-            //cout << "IP packet" << endl;
             break;
         case ETHERTYPE_ARP:
-            cout << "ARP packet" << endl;
+            sniffer->handleArpPacket(packet);
             break;       
         case ETHERTYPE_IPV6:
-            // cout << "IPv6 packet" << endl;
             sniffer->handleIpv6Packet(packet);
             break;
         default:
@@ -149,6 +151,7 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
             break;
     }
 
+    // finally print hex dump
     printPacketData(packet, header->len);
 
 }
@@ -162,11 +165,16 @@ void Sniffer::sniff(){
 // Handle IPv6 packet
 void Sniffer::handleIpv6Packet(const u_char *packet){
 
+    // get the header
     char ip6_addr[INET6_ADDRSTRLEN];
     const struct ip6_hdr *ip6header = (struct ip6_hdr *)(packet + sizeof(struct ether_header));
+    
+    cout << "-- IPv6" << endl;
 
-    std::cout << "src IP: " << inet_ntop(AF_INET6, &(ip6header->ip6_src), ip6_addr, INET6_ADDRSTRLEN ) << std::endl;
-    std::cout << "dst IP: " << inet_ntop(AF_INET6, &(ip6header->ip6_dst), ip6_addr, INET6_ADDRSTRLEN ) << std::endl;
+    cout << "src IP: " << inet_ntop(AF_INET6, &(ip6header->ip6_src), ip6_addr, INET6_ADDRSTRLEN ) << endl;
+    cout << "dst IP: " << inet_ntop(AF_INET6, &(ip6header->ip6_dst), ip6_addr, INET6_ADDRSTRLEN ) << endl;
+
+    // switch for transport protocol
     switch(ip6header->ip6_nxt){
         case IPPROTO_TCP:
             printTcpPacket(packet + sizeof(struct ip6_hdr));
@@ -175,20 +183,25 @@ void Sniffer::handleIpv6Packet(const u_char *packet){
             printUdpPacket(packet + sizeof(struct ip6_hdr));
             break;
         case IPPROTO_ICMPV6:
-            printIcmp6Packet(packet + sizeof(struct ip6_hdr));
-            break;
-        case IPPROTO_HOPOPTS:
-            cout << "NDP PROTOCOL" << endl;
+            printIcmp6Packet(packet);
             break;
         default:
-            cout << "Unknown transport protocol ipv6" << to_string(ip6header->ip6_nxt) << endl;
+            cerr << "Unknown transport protocol ipv6" << to_string(ip6header->ip6_nxt) << endl;
             break;
     }
 }
 
 void Sniffer::handleArpPacket(const u_char *packet){
-    cout << "ARP packet" << endl;
+    auto arpheader = (struct ether_arp *)(packet + sizeof(struct ether_header));
+    cout << "-- Arp" << endl;
+    cout << "operation: " << ntohs(arpheader->arp_op) << endl; // 1 is request, 2 is reply
+    // print this sha but as mac adress
+    cout << "sha MAC: " << ether_ntoa((struct ether_addr *)arpheader->arp_sha) << endl;
+    cout << "tha MAC: " << ether_ntoa((struct ether_addr *)arpheader->arp_tha) << endl;
+    cout << "spa IP: " << inet_ntoa(*(struct in_addr *)arpheader->arp_spa) << endl;
+    cout << "tpa IP: " << inet_ntoa(*(struct in_addr *)arpheader->arp_tpa) << endl;
 }
+
 
 
 
@@ -201,20 +214,12 @@ void Sniffer::printTcpPacket(const u_char *packet){
 
     const struct ip *ipheader = (const struct ip *)packet;
     const struct tcphdr *tcpheader = (struct tcphdr *)(packet + sizeof(ether_header) + ipheader->ip_hl * 4);
-
-    // char srcIp[INET_ADDRSTRLEN]; // buffer for src
-    // char dstIp[INET_ADDRSTRLEN]; // buffer for dst
-    // inet_ntop(AF_INET, &(ipheader->ip_src), srcIp, INET_ADDRSTRLEN);
-    // inet_ntop(AF_INET, &(ipheader->ip_dst), dstIp, INET_ADDRSTRLEN);
-
+    cout << "-- TCP" << endl;
     int srcPort = ntohs(tcpheader->source);
     int dstPort = ntohs(tcpheader->dest);
 
-    // std::cout << "src IP: " << srcIp << std::endl;
-    // std::cout << "dst IP: " << dstIp << std::endl;
-
-    std::cout << "src port: " << srcPort << std::endl;
-    std::cout << "dst port: " << dstPort << std::endl;
+    cout << "src port: " << srcPort << endl;
+    cout << "dst port: " << dstPort << endl;
 
 }
 
@@ -223,34 +228,20 @@ void Sniffer::printUdpPacket(const u_char *packet){
     const struct ip *ipheader = (const struct ip *)packet;
     const struct udphdr *udpheader = (struct udphdr *)(packet + sizeof(ether_header) + ipheader->ip_hl * 4);
 
-    // char srcIp[INET_ADDRSTRLEN];
-    // char dstIp[INET_ADDRSTRLEN];
-    // inet_ntop(AF_INET, &(ipheader->ip_src), srcIp, INET_ADDRSTRLEN);
-    // inet_ntop(AF_INET, &(ipheader->ip_dst), dstIp, INET_ADDRSTRLEN);
-
     int srcPort = ntohs(udpheader->source);
     int dstPort = ntohs(udpheader->dest);
 
-  //  std::cout << "UDP Packet:" << std::endl;
-    // std::cout << "src IP: " << srcIp << std::endl;
-    // std::cout << "dst IP: " << dstIp << std::endl;
-    std::cout << "src port: " << srcPort << std::endl;
-    std::cout << "dst port: " << dstPort << std::endl;
+    cout << "-- UDP" << endl;
+    cout << "src port: " << srcPort << endl;
+    cout << "dst port: " << dstPort << endl;
 }
 
 void Sniffer::printIcmp6Packet(const u_char *packet){
-    const struct ip *ipheader = (const struct ip *)packet;
-    const struct icmp *icmpheader = (const struct icmp *)(packet + ipheader->ip_hl * 4);
-
-    cout << "ICMP packet" << endl;
-    // char srcIp[INET_ADDRSTRLEN];
-    // char dstIp[INET_ADDRSTRLEN];
-    // inet_ntop(AF_INET, &(ipheader->ip_src), srcIp, INET_ADDRSTRLEN);
-    // inet_ntop(AF_INET, &(ipheader->ip_dst), dstIp, INET_ADDRSTRLEN);
-
     
-    // std::cout << "src IP: " << srcIp << std::endl;
-    // std::cout << "dst IP: " << dstIp << std::endl;
-    // std::cout << "Type: " << (int) icmpheader->icmp_type << std::endl;
-    // std::cout << "Code: " << (int) icmpheader->icmp_code << std::endl;
+    // icmp header pointer
+    auto icmpheader = (struct icmphdr *)(packet + sizeof(struct ether_header) + sizeof(ip6_hdr));
+
+    cout << "-- ICMP" << endl;
+    cout << "type:        " << unsigned(icmpheader->type) << endl;
+    cout << "code:        " << unsigned(icmpheader->code) << endl;
 }
