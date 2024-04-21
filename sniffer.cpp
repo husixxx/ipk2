@@ -1,4 +1,5 @@
 #include "sniffer.hpp"
+using namespace std;
 
 
 Sniffer::Sniffer( string interface) : interface(interface) , handle(nullptr) {
@@ -20,22 +21,25 @@ Sniffer::~Sniffer(){
 
 void printPacketData(const u_char* packet, int length) {
     cout << endl;
-    cout << hex << setfill('0'); // set formating for hex output
+    cout << hex << setfill('0'); // set formatting for hex output
     for (int i = 0; i < length; ++i) {
         
         if (i % 16 == 0) {
             if (i != 0) {
-                cout << " "; // space between hex and ASCII representation
-                // print ascii
-                for (int j = i - 16; j < i; ++j)
+                cout << "  "; // space before ascii
+                for (int j = i - 16; j < i; ++j) { 
+                    if (j % 8 == 0) cout << " "; // sdd space in middle 
                     cout << (isprint(packet[j]) ? static_cast<char>(packet[j]) : '.');
+                }
                 cout << endl;
             }
-            // adrress 
+            
             cout << "0x" << setw(4) << i << ": ";
+        } else if (i % 8 == 0) {
+            cout << " "; // space in the middle
         }
 
-        // hexa print
+        // Hex value print
         cout << setw(2) << static_cast<unsigned>(packet[i]) << " ";
     }
 
@@ -43,18 +47,22 @@ void printPacketData(const u_char* packet, int length) {
     int bytes_left = length % 16;
     if (bytes_left > 0) {
         for (int i = 0; i < 16 - bytes_left; ++i) {
-            cout << "   "; // padding
+            cout << "   "; // extra spaces
         }
+        if (bytes_left <= 8) cout << " "; // extra space 
     }
 
-    // last lane
-    cout << " ";
-    int start = length - (length % 16);
-    for (int i = start; i < length; ++i)
+    
+    cout << "  "; // Space before ASCII 
+    int start = length - bytes_left;
+    for (int i = start; i < length; ++i) {
+        if (i % 8 == 0) cout << " "; // space in middle
         cout << (isprint(packet[i]) ? static_cast<char>(packet[i]) : '.');
+    }
     cout << endl;
 
-    cout << dec; // dec print
+    // back to dec format
+    cout << dec;
 }
 
 
@@ -93,8 +101,11 @@ void Sniffer::handleIpv4Packet(const u_char *packet){
         case IPPROTO_ICMP:
             printIcmp6Packet(packet + ipheader->ip_hl * 4);
             break;
+        case IPPROTO_IGMP:
+            printIgmpPacket(packet + ipheader->ip_hl * 4);
+            break;
         default:
-            cout << "Unknown transport protocol" << endl;
+            cout << "Unknown transport protocol" << int(ipheader->ip_p) << endl;
             break;
     }
 }
@@ -133,7 +144,7 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
 
     cout << "src MAC: " << srcMac << endl;
     cout << "dst MAC: " << dstMac << endl;
-    cout << "frame length: " << header->len << endl;
+    cout << "frame length: " << header->caplen << endl;
 
 
     switch(ntohs(eth->ether_type)){
@@ -147,7 +158,7 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
             sniffer->handleIpv6Packet(packet);
             break;
         default:
-            cout << "Unknown packet" << endl;
+            cerr << "Unknown packet" << endl;
             break;
     }
 
@@ -244,4 +255,8 @@ void Sniffer::printIcmp6Packet(const u_char *packet){
     cout << "-- ICMP" << endl;
     cout << "type:        " << unsigned(icmpheader->type) << endl;
     cout << "code:        " << unsigned(icmpheader->code) << endl;
+}
+
+void Sniffer::printIgmpPacket(const u_char *packet){
+    cout << "-- IGMP" << endl;
 }

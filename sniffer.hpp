@@ -101,7 +101,12 @@ class Sniffer {
          */
         
         void printIcmp6Packet(const u_char *packet);
-        
+
+        /**
+         * @brief Method for handling the icmp packet
+         * @param packet - packet to handle
+         */
+        void printIgmpPacket(const u_char *packet);    
 
         /**
          * @brief Method where is recognized the type of packet and then it is handled by the appropriate method
@@ -111,7 +116,7 @@ class Sniffer {
          */
         static void printPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
         int packetCount = 1;
-        
+            
 
     private:
     

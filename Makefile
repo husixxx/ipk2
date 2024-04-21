@@ -1,2 +1,2 @@
 all:
-	g++ main.cpp -o main -lpcap
+	g++ -Wall -Wextra -pedantic main.cpp -o main -lpcap
