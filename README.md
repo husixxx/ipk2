@@ -1,13 +1,12 @@
 # IPK Projekt 2: Klient pre chat server používajúci IPK24-CHAT protokol
-
+# Autor : Richard Húska (xhuska03)
 ## Obsah
 - [Úvod](#úvod)
 - [Architektúra aplikácie](#architektúra-aplikácie)
-  - [UML diagram](#uml-diagramy)
+  - [UML diagram](#uml-diagram)
 - [Testovanie](#testovanie)
   - [Testovacie prostredie](#testovacie-prostredie)
   - [Testovacie prípady](#testovacie-prípady)
-- [Extra funkcionality](#extra-funkcionality)
 - [Bibliografia](#bibliografia)
 
 ## Úvod
@@ -28,7 +27,7 @@ Pri zachytávaní paketov je kľúčové správne rozpoznať typ paketu, či už
 * Tieto metódy slúžia pre štart zachytávania paketov na danom rozhraní, pre nastavenie filteru a pre následné vetvové spracovávanie paketov podľa ich typu v metóde `printPacket`.
 * Pre každý typ paketu existuje metóda, kde sa vypisujú jej unikátne a užitočné informácie.
 * Ako posledné sa vypíše hexa a ascii reprezentácia obsahu paketu. Tento výpis je inšpirovaný výpisom z nastároju Wireshark.
-### UML diagram
+## UML diagram
 ![](uml.png)
 
 ## Testovanie
