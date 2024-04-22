@@ -104,9 +104,9 @@ class Sniffer {
 
         /**
          * @brief Method for handling the icmp packet
-         * @param packet - packet to handle
+         * 
          */
-        void printIgmpPacket(const u_char *packet);    
+        void printIgmpPacket();    
 
         /**
          * @brief Method where is recognized the type of packet and then it is handled by the appropriate method

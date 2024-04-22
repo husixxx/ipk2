@@ -60,6 +60,7 @@ void Sniffer::printPacketData(const u_char* packet, int length) {
         cout << (isprint(packet[i]) ? static_cast<char>(packet[i]) : '.');
     }
     cout << endl;
+    cout << endl;
 
     // back to dec format
     cout << dec;
@@ -102,7 +103,7 @@ void Sniffer::handleIpv4Packet(const u_char *packet){
             printIcmp6Packet(packet + ipheader->ip_hl * 4);
             break;
         case IPPROTO_IGMP:
-            printIgmpPacket(packet + ipheader->ip_hl * 4);
+            printIgmpPacket();
             break;
         default:
             cout << "Unknown transport protocol" << int(ipheader->ip_p) << endl;
@@ -259,6 +260,7 @@ void Sniffer::printIcmp6Packet(const u_char *packet){
     cout << "code:        " << unsigned(icmpheader->code) << endl;
 }
 
-void Sniffer::printIgmpPacket(const u_char *packet){
+void Sniffer::printIgmpPacket(){
+    
     cout << "-- IGMP" << endl;
 }
