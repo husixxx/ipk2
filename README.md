@@ -24,25 +24,33 @@ Pri zachytávaní paketov je kľúčové správne rozpoznať typ paketu, či už
 * Následne inicializuje inštanciu triedy `sniffer` a volá jej príslušné metódy pre správne zachytávanie paketov.
 ### Sniffer modul
 * Tento modul vykonáva požadovanú funkcionalitu čuchaču, tj. vypisovanie informácií o jednotlivých paketoch.
-* Obsahuje definíciu triedy `Sniffer`, ktorá obsahuje metódy `Sniffer()`, `setFilter` , `handleIPv4Packet`, `handleIPv6Packet`, `handleArpPacket` , `printTcpPacket`, `printUdpPacket`, `printIcmpPacket`.
-* Tieto metódy slúžia pre štart zachytávania paketov na danom rozhraní, pre nastavenie filteru a pre následné vetvové spracovávanie paketov podľa ich typu.
+* Obsahuje definíciu triedy `Sniffer`, ktorá obsahuje metódy `Sniffer()`, `setFilter` , `handleIPv4Packet`, `handleIPv6Packet`, `handleArpPacket` , `printTcpPacket`, `printUdpPacket`, `printIcmpPacket` , `printPacket`, `printPacketData`.
+* Tieto metódy slúžia pre štart zachytávania paketov na danom rozhraní, pre nastavenie filteru a pre následné vetvové spracovávanie paketov podľa ich typu v metóde `printPacket`.
 * Pre každý typ paketu existuje metóda, kde sa vypisujú jej unikátne a užitočné informácie.
+* Ako posledné sa vypíše hexa a ascii reprezentácia obsahu paketu. Tento výpis je inšpirovaný výpisom z nastároju Wireshark.
+### UML diagram
+
 
 ## Testovanie
+Testovanie bolo vykonané pomocou rôznych "ping" príkazov a iných nástrojov na generovanie sieťovej premávky, čo nám umožnilo ověřit funkčnosť na rôznych sieťových protokoloch a paketoch. Čmuchač paketov bol schopný detekovať a analyzovať všetky typy paketov podľa zadania.
+Testy zahrňovali presné výpisy podobné nástroju Wireshark pre zobrazenie informácií o paketoch.
 ### IPv4
 * Igmp - `tcpreplay -t -i lo IGMP_V1.cap`
 ### IPv6
-* Icmp6
-** ndp - `ping6 fe80::1%eth0`
-** mld
+* Icmp6 - `python skript`
+* ndp - `ping6 fe80::1%eth0`
+* mld - `python skript`
 ### Arp
-`arping -I eth0 192.168.1.1`
+* arp - `arping -I eth0 192.168.1.1`
 
 
 ## Bibliografia
-* c++ referencia: https://en.cppreference.com/w/ cited [2024-03-10]
-* Wikipedia, the free encyclopedia[online]: http://en.wikipedia.org/wiki/Pcap cited [2024-03-10] 
-* ChatGPT[online]: https://chat.openai.com/ cited [2024-03-10] 
-
+* C++ referencia[online]: https://en.cppreference.com/w/ cited [2024-04-10]
+* Wikipedia, the free encyclopedia[online]: http://en.wikipedia.org/wiki/Pcap cited [2024-04-15] 
+* ChatGPT[online]: https://chat.openai.com/ cited [2024-04-20]
+* [RFC2236] Fenner, W.  Internet Group Management Protocol, Version 2 [online]. November 1997. [cited 2024-04-20]. Available at: https://datatracker.ietf.org/doc/html/rfc2236
+* [RFC2236] Conta, A. Internet Control Message Protocol (ICMPv6) for the Internet Protocol Version 6 (IPv6) Specification, Version 2 [online]. March 2006. [cited 2024-04-20].Available at: https://datatracker.ietf.org/doc/html/rfc4443
+* [RFC2236] C. Plummer, David.  An Ethernet Address Resolution Protocol [online]. November 1982. [cited 2024-04-20]. Available at: https://datatracker.ietf.org/doc/html/rfc826
+* [RFC2236] Deering, S. Internet Protocol, Version 6 (IPv6) Specification [online]. December 1998. [cited 2024-04-20]. Available at: https://datatracker.ietf.org/doc/html/rfc2460
 
 
