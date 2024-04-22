@@ -19,7 +19,7 @@ Sniffer::~Sniffer(){
     pcap_close(handle);
 }
 
-void printPacketData(const u_char* packet, int length) {
+void Sniffer::printPacketData(const u_char* packet, int length) {
     cout << endl;
     cout << hex << setfill('0'); // set formatting for hex output
     for (int i = 0; i < length; ++i) {
@@ -34,7 +34,7 @@ void printPacketData(const u_char* packet, int length) {
                 cout << endl;
             }
             
-            cout << "0x" << setw(4) << i << ": ";
+            cout << setw(4) << i << ": ";
         } else if (i % 8 == 0) {
             cout << " "; // space in the middle
         }
@@ -163,7 +163,7 @@ void Sniffer::printPacket(u_char *args, const struct pcap_pkthdr *header, const 
     }
 
     // finally print hex dump
-    printPacketData(packet, header->len);
+    sniffer->printPacketData(packet, header->len);
 
 }
 
@@ -224,6 +224,7 @@ void Sniffer::handleArpPacket(const u_char *packet){
 void Sniffer::printTcpPacket(const u_char *packet){
 
     const struct ip *ipheader = (const struct ip *)packet;
+    // get tcp header
     const struct tcphdr *tcpheader = (struct tcphdr *)(packet + sizeof(ether_header) + ipheader->ip_hl * 4);
     cout << "-- TCP" << endl;
     int srcPort = ntohs(tcpheader->source);
@@ -237,6 +238,7 @@ void Sniffer::printTcpPacket(const u_char *packet){
 
 void Sniffer::printUdpPacket(const u_char *packet){
     const struct ip *ipheader = (const struct ip *)packet;
+    // get udp header
     const struct udphdr *udpheader = (struct udphdr *)(packet + sizeof(ether_header) + ipheader->ip_hl * 4);
 
     int srcPort = ntohs(udpheader->source);

@@ -12,9 +12,14 @@ int main(int argc, char *argv[]){
     Config snifferConfig;
     // parse arguments and store config
     helper::parseArgs(argc, argv, snifferConfig);
+    // if no interface specified print all active interfaces
     if(!snifferConfig.allSpecified){
         helper::PrintAllActiveInterfaces();
         return 0;
+    }
+    if(!snifferConfig.onlySpecified){
+        cerr << "No interface specified" << endl;
+        return 1;
     }
     
     // create sniffer object
@@ -28,7 +33,7 @@ int main(int argc, char *argv[]){
     sniffer.setFilter(filter);
     // start sniffing
     sniffer.sniff();
-    cout << filter << endl;
+    // cout << "filter" << filter << endl;
 
     return 0;
 }

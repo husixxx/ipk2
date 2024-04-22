@@ -3,7 +3,8 @@
 
 std::string helper::createFilter( Config &sniffer_config ){
     std::string filter = "";
-    if(sniffer_config.onlySpecified){
+    bool isOnlyInterface = false;
+    if(!sniffer_config.onlySpecified){
         return filter;
     }
     filter = "len < 0 ";
@@ -18,6 +19,7 @@ std::string helper::createFilter( Config &sniffer_config ){
                 filter += "port " + to_string(sniffer_config.port)  + " ";
             }
         }
+        isOnlyInterface = true;
     }
     if(sniffer_config.udp){
         filter += "or udp ";
@@ -30,6 +32,7 @@ std::string helper::createFilter( Config &sniffer_config ){
                 filter += "port " + to_string(sniffer_config.port)  + " ";
             }
         }
+        isOnlyInterface = true;
     }
     if(!sniffer_config.udp && !sniffer_config.tcp && sniffer_config.port > 0){
         filter += "or tcp ";
@@ -48,28 +51,38 @@ std::string helper::createFilter( Config &sniffer_config ){
         }else{
             filter += "port " + to_string(sniffer_config.port)  + " ";
         }
+        isOnlyInterface = true;
         
     }
     if(sniffer_config.arp){
         filter += "or arp ";
+        isOnlyInterface = true;
     }
     if(sniffer_config.ndp){
-        filter += "or icmp6 and ip6[40] >= 133 and ip6[40] <= 137";
+        filter += "or icmp6 and ip6[40] >= 133 and ip6[40] <= 137 ";
+        isOnlyInterface = true;
     }
+
     
     if(sniffer_config.icmp4){
         filter += "or icmp ";
+        isOnlyInterface = true;
     }
     if(sniffer_config.icmp6){
         filter += "or icmp6 ";
+        isOnlyInterface = true;
     }
     if(sniffer_config.igmp){
         filter += "or igmp ";
+        isOnlyInterface = true;
     }
     if(sniffer_config.mld){
         filter += "or icmp6 and (ip6[40] >= 130 and ip6[40] <= 132 or ip6[40] = 143)";
+        isOnlyInterface = true;
     }
-    
+    if(!isOnlyInterface){
+        filter = "";
+    }
     return filter;
 }
 
@@ -94,6 +107,7 @@ void helper::PrintAllActiveInterfaces(){
 
 void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
     int port = 0;
+    bool interface = false;
     for(int i = 1; i < argc; i++){
         if(string(argv[i]) == "-i" || string(argv[i]) == "--interface"){
             if( i + 1 >= argc){
@@ -102,6 +116,7 @@ void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
                 sniffer_config.interface = string(argv[i+1]);
                 i++;
                 sniffer_config.allSpecified = true;
+                interface = true;
                 sniffer_config.onlySpecified = true;
             }
 
@@ -185,6 +200,9 @@ void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
             exit(1);
         }
     }
+
+    sniffer_config.onlySpecified = interface;
+
 }
 
 void helper::signalHandler(int signum){

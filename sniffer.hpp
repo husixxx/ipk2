@@ -115,6 +115,13 @@ class Sniffer {
          * @param packet - packet to handle
          */
         static void printPacket(u_char *args, const struct pcap_pkthdr *header, const u_char *packet);
+
+        /**
+         * @brief Method for printing the hex dump of the packet
+         * @param packet - packet to print
+         * @param len - length of the packet
+         */
+        void printPacketData(const u_char *packet, int len);
         int packetCount = 1;
             
 
