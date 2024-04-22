@@ -1,6 +1,10 @@
 #include "sniffer.cpp"
 #include "helper.cpp"
 
+/**
+ * Ipk Project 2: Packet sniffer
+ * Author: xhuska03@stud.fit.vutbr.cz
+*/
 
 
 
