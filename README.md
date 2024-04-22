@@ -29,7 +29,7 @@ Pri zachytávaní paketov je kľúčové správne rozpoznať typ paketu, či už
 * Pre každý typ paketu existuje metóda, kde sa vypisujú jej unikátne a užitočné informácie.
 * Ako posledné sa vypíše hexa a ascii reprezentácia obsahu paketu. Tento výpis je inšpirovaný výpisom z nastároju Wireshark.
 ### UML diagram
-[](uml.png)
+[UML diagram](uml.png)
 
 ## Testovanie
 Testovanie bolo vykonané pomocou rôznych "ping" príkazov a iných nástrojov na generovanie sieťovej premávky, čo nám umožnilo ověřit funkčnosť na rôznych sieťových protokoloch a paketoch. Čmuchač paketov bol schopný detekovať a analyzovať všetky typy paketov podľa zadania.
