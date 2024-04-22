@@ -106,7 +106,7 @@ void helper::PrintAllActiveInterfaces(){
 
 
 void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
-    int port = 0;
+    
     bool interface = false;
     for(int i = 1; i < argc; i++){
         if(string(argv[i]) == "-i" || string(argv[i]) == "--interface"){
@@ -135,7 +135,7 @@ void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
                 try{
                     sniffer_config.port = stoi(argv[i+1]);
                     i++;
-                }catch(exception e){
+                }catch(exception &e){
                     cout << "Invalid port specified" << endl;
                     exit(1);
                     
@@ -180,7 +180,7 @@ void helper::parseArgs(int argc, char *argv[], Config &sniffer_config){
                 try{
                     sniffer_config.packetCount = stoi(argv[i+1]);
                     i++;
-                }catch(exception e){
+                }catch(exception& e){
                     cout << "Invalid -n specified" << endl;
                     exit(1);
                     

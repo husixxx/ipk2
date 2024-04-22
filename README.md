@@ -1,12 +1,10 @@
 # IPK Projekt 2: Klient pre chat server používajúci IPK24-CHAT protokol
-# Autor : Richard Húska (xhuska03)
+# Autor: Richard Húska
 ## Obsah
 - [Úvod](#úvod)
 - [Architektúra aplikácie](#architektúra-aplikácie)
   - [UML diagram](#uml-diagram)
 - [Testovanie](#testovanie)
-  - [Testovacie prostredie](#testovacie-prostredie)
-  - [Testovacie prípady](#testovacie-prípady)
 - [Bibliografia](#bibliografia)
 
 ## Úvod
@@ -16,10 +14,10 @@ Pri zachytávaní paketov je kľúčové správne rozpoznať typ paketu, či už
 
 ## Architektúra aplikácie
 
-### Filter modul `filter.cpp`
+### Helper modul
 * Tento modul obsahuje metódy `createFilter` , `parseArgs` , `PrintAllActiveInterfaces` a `signalHandler` , ktoré zabezpečujú spracovávanie vstupných argumentov a následnú generáciu filteru, ktorý je neskôr nastavený pre zachytávanie.
 ### Main modul
-* Tento modul zahŕňa hlavnú funkciu programu, ktorá inicializuje konfiguračnú štruktúru `Config` a vyvolá statické metódy z triedy `filter`.
+* Tento modul zahŕňa hlavnú funkciu programu, ktorá inicializuje konfiguračnú štruktúru `Config` a vyvolá statické metódy z triedy `helper`.
 * Následne inicializuje inštanciu triedy `sniffer` a volá jej príslušné metódy pre správne zachytávanie paketov.
 ### Sniffer modul
 * Tento modul vykonáva požadovanú funkcionalitu čuchaču, tj. vypisovanie informácií o jednotlivých paketoch.
@@ -27,7 +25,7 @@ Pri zachytávaní paketov je kľúčové správne rozpoznať typ paketu, či už
 * Tieto metódy slúžia pre štart zachytávania paketov na danom rozhraní, pre nastavenie filteru a pre následné vetvové spracovávanie paketov podľa ich typu v metóde `printPacket`.
 * Pre každý typ paketu existuje metóda, kde sa vypisujú jej unikátne a užitočné informácie.
 * Ako posledné sa vypíše hexa a ascii reprezentácia obsahu paketu. Tento výpis je inšpirovaný výpisom z nastároju Wireshark.
-## UML diagram
+### UML diagram
 ![](uml.png)
 
 ## Testovanie
